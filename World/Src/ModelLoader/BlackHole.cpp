@@ -2,9 +2,9 @@
 #include "../../Includes/Primitives.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-BlackHole::BlackHole(const glm::vec3& position, float sphereRadius,
-    float diskInnerRadius, float diskOuterRadius,
-    int sphereSectors, int sphereStacks, int diskSegments)
+BlackHole::BlackHole(const glm::vec3& position, GLfloat sphereRadius,
+    GLfloat diskInnerRadius, GLfloat diskOuterRadius,
+    GLint sphereSectors, GLint sphereStacks, GLint diskSegments)
     : Position(position), SphereRadius(sphereRadius),
     sphereMesh([&] {
     auto data = Primitives::Sphere(sphereRadius, sphereSectors, sphereStacks);
@@ -17,14 +17,14 @@ BlackHole::BlackHole(const glm::vec3& position, float sphereRadius,
 {
 }
 
-void BlackHole::Draw(Shader& sphereShader, Shader& diskShader,
-    const glm::mat4& view, const glm::mat4& projection, float time) const {
+void BlackHole::Draw(Shader& sphereShader, Shader& diskShader, const glm::mat4& view, const glm::mat4& projection, GLfloat time) const {
+    if (!Enabled) return;
+
     sphereShader.use();
     sphereShader.setMat4("view", view);
     sphereShader.setMat4("projection", projection);
     sphereShader.setMat4("model", glm::translate(glm::mat4(1.0f), Position));
     sphereMesh.Draw(GL_TRIANGLES);
-
     diskShader.use();
     diskShader.setMat4("view", view);
     diskShader.setMat4("projection", projection);

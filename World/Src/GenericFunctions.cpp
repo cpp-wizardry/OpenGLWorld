@@ -35,9 +35,9 @@ void processInput(GLFWwindow* window, float dt) {
 
     bool isMoving = false;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { cam->MoveForward(dt); isMoving = true; }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cam->MoveBackward(dt);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cam->MoveLeft(dt);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cam->MoveRight(dt);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { cam->MoveBackward(dt); isMoving = true; }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { cam->MoveLeft(dt); isMoving = true; }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { cam->MoveRight(dt); isMoving = true; }
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
 
     cam->UpdateFOV(isMoving, dt);

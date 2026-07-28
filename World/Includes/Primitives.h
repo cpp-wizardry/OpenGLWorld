@@ -1,23 +1,23 @@
 #pragma once
 #include <vector>
+#include <glad/glad.h>
 
 namespace Primitives {
 
     struct MeshData {
-        std::vector<float> vertices;
-        std::vector<unsigned int> indices;
+        std::vector<GLfloat> vertices;
+        std::vector<GLuint> indices;
     };
 
-    MeshData Sphere(float radius, int sectors, int stacks);
+    MeshData Sphere(GLfloat radius, GLint sectors, GLint stacks);
 
-    MeshData Ring(float innerRadius, float outerRadius, int segments);
+    MeshData Ring(GLfloat innerRadius, GLfloat outerRadius, GLint segments);
 
-    MeshData Plane(float width, float height);
+    MeshData Plane(GLfloat width, GLfloat height, GLfloat uvTileSize = 1.0f);
 
     MeshData FullscreenQuad();
 
-    MeshData RectQuad(float x0, float y0, float x1, float y1);
+    MeshData RectQuad(GLfloat x0, GLfloat y0, GLfloat x1, GLfloat y1);
 
-    MeshData Crosshair(float aspectRatio, float thickness, float length);
-
+    MeshData Crosshair(GLfloat aspectRatio, GLfloat thickness, GLfloat length);
 }

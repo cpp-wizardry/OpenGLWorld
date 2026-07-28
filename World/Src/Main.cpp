@@ -54,7 +54,7 @@ int main() {
 
     int planeHeight, planeWidth;
     getPlaneData(planeHeight, planeWidth);
-    auto planeData = Primitives::Plane(static_cast<float>(planeWidth), static_cast<float>(planeHeight));
+    auto planeData = Primitives::Plane(static_cast<GLfloat>(planeWidth), static_cast<GLfloat>(planeHeight));
     Mesh planeMesh(planeData.vertices, { {0, 3}, {1, 3}, {2, 2} }, GL_DYNAMIC_DRAW);
 
     BlackHole blackHole(glm::vec3(0.0f, 5.0f, 0.0f));
@@ -68,30 +68,30 @@ int main() {
     auto quadData = Primitives::FullscreenQuad();
     Mesh screenQuad(quadData.vertices, { {0, 2}, {1, 2} });
 
-    UIOverlay ui(static_cast<float>(sceneWidth) / static_cast<float>(sceneHeight));
+    UIOverlay ui(static_cast<GLfloat>(sceneWidth) / static_cast<GLfloat>(sceneHeight));
 
     ctx.modelMeshes = ctx.Mng3D.LoadModel(RootPath("assets/models/Bush.obj"));
 
     glm::vec3 objectPos(0, 0.5f, 0);
     glm::vec3 objectRotation(0, 0, 0);
-    float lastFrame = 0;
+    GLfloat lastFrame = 0;
 
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = static_cast<float>(glfwGetTime());
-        float deltaTime = currentFrame - lastFrame;
+        GLfloat currentFrame = static_cast<GLfloat>(glfwGetTime());
+        GLfloat deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
         if (fbHeight == 0) fbHeight = 1;
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
-            static_cast<float>(fbWidth) / static_cast<float>(fbHeight), 0.1f, 1000.0f);
+            static_cast<GLfloat>(fbWidth) / static_cast<GLfloat>(fbHeight), 0.1f, 1000.0f);
         glm::mat4 view = camera.GetViewMatrix();
 
         processInput(window, deltaTime);
 
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
-            static float lastPress = 0;
+            static GLfloat lastPress = 0;
             if (currentFrame - lastPress > 0.5f) {
                 ctx.modelMeshes = ctx.Mng3D.LoadModel(RootPath("assets/models/Bush.obj"));
                 lastPress = currentFrame;
@@ -100,7 +100,7 @@ int main() {
         }
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-            static float lastClick = 0;
+            static GLfloat lastClick = 0;
             if (currentFrame - lastClick > 0.2f) {
                 glm::vec3 clickPoint = Utils::GetClickPoint(camera.Position, camera.Front, 10.0f);
 
@@ -117,11 +117,20 @@ int main() {
         }
 
         if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
-            static float lastClear = 0;
+            static GLfloat lastClear = 0;
             if (currentFrame - lastClear > 0.5f) {
                 ctx.Pbuild.Clear();
                 lastClear = currentFrame;
                 std::cout << "Points cleared!\n";
+            }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+            static float lastToggle = 0;
+            if (currentFrame - lastToggle > 0.3f) {
+                blackHole.Enabled = !blackHole.Enabled;
+                lastToggle = currentFrame;
+                std::cout << "Black hole " << (blackHole.Enabled ? "enabled" : "disabled") << "\n";
             }
         }
 
@@ -135,6 +144,7 @@ int main() {
         planeShader.setMat4("projection", projection);
         planeShader.setMat4("view", view);
         planeShader.setMat4("model", glm::mat4(1.0f));
+        planeShader.setVec3("viewPos", camera.Position);
         planeMesh.Draw(GL_TRIANGLE_FAN);
 
         modelShader.use();
@@ -165,10 +175,12 @@ int main() {
 
         Utils::LensingData lensing = Utils::ComputeLensingData(
             blackHole.Position, blackHole.SphereRadius, camera, view, projection);
+        bool applyLensing = blackHole.Enabled && lensing.visible;
 
         glDisable(GL_DEPTH_TEST);
 
         distortShader.use();
+        glUniform1i(glGetUniformLocation(distortShader.ID, "enabled"), applyLensing ? 1 : 0);
         glUniform2f(glGetUniformLocation(distortShader.ID, "blackHoleScreenPos"), lensing.screenUV.x, lensing.screenUV.y);
         glUniform1f(glGetUniformLocation(distortShader.ID, "horizonRadius"), lensing.horizonRadiusUV);
         glUniform1f(glGetUniformLocation(distortShader.ID, "lensStrength"), 3.0f);
@@ -184,7 +196,7 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        static float lastTitleUpdate = 0.0f;
+        static GLfloat lastTitleUpdate = 0.0f;
         if (currentFrame - lastTitleUpdate > 0.1f) {
             char titleBuf[256];
             snprintf(titleBuf, sizeof(titleBuf),

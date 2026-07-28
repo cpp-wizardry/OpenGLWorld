@@ -1,23 +1,26 @@
 #pragma once
+#include <glad/glad.h>  
 #include "Mesh.h"
 #include "Shader.h"
 #include <glm/glm.hpp>
 
 class BlackHole {
+
 public:
-    BlackHole(const glm::vec3& position,
-        float sphereRadius = 1.5f,
-        float diskInnerRadius = 2.2f,
-        float diskOuterRadius = 4.5f,
-        int sphereSectors = 36, int sphereStacks = 18,
-        int diskSegments = 64);
-
-    void Draw(Shader& sphereShader, Shader& diskShader,
-        const glm::mat4& view, const glm::mat4& projection, float time) const;
-
     glm::vec3 Position;
-    float SphereRadius;
+    GLfloat SphereRadius;
+    GLboolean Enabled = true;
 
+    BlackHole(const glm::vec3& position, GLfloat sphereRadius = 1.5f, GLfloat diskInnerRadius = 2.2f, GLfloat diskOuterRadius = 4.5f, GLint sphereSectors = 36, GLint sphereStacks = 18, GLint diskSegments = 64);
+    void Draw(Shader& sphereShader, Shader& diskShader, const glm::mat4& view, const glm::mat4& projection, GLfloat time) const;
+    /*void toggleBlackHole() {
+        if (currentFrame - lastToggle > 0.3f) {
+            blackHole.Enabled = !blackHole.Enabled;
+            lastToggle = currentFrame;
+            std::cout << "Black hole " << (blackHole.Enabled ? "enabled" : "disabled") << "\n";
+        }
+    };*/
+    
 private:
     Mesh sphereMesh;
     Mesh diskMesh;

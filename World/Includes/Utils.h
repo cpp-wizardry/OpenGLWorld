@@ -1,16 +1,17 @@
 #pragma once
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <cmath>
 #include "Camera.h"
 
 namespace Utils {
 
-    inline glm::vec3 GetClickPoint(const glm::vec3& origin, const glm::vec3& dir, float maxRange) {
+    inline glm::vec3 GetClickPoint(const glm::vec3& origin, const glm::vec3& dir, GLfloat maxRange) {
         glm::vec3 hit;
-        bool hasHit = false;
+        GLboolean hasHit = false;
 
         if (std::fabs(dir.y) > 1e-5f) {
-            float t = -origin.y / dir.y;
+            GLfloat t = -origin.y / dir.y;
             if (t > 0.0f) {
                 hit = origin + dir * t;
                 hasHit = true;
@@ -28,10 +29,10 @@ namespace Utils {
         return hit;
     }
 
-    inline glm::vec3 HueToRGB(float hueDegrees) {
-        float h = hueDegrees / 60.0f;
-        float c = 1.0f;
-        float x = c * (1.0f - std::fabs(std::fmod(h, 2.0f) - 1.0f));
+    inline glm::vec3 HueToRGB(GLfloat hueDegrees) {
+        GLfloat h = hueDegrees / 60.0f;
+        GLfloat c = 1.0f;
+        GLfloat x = c * (1.0f - std::fabs(std::fmod(h, 2.0f) - 1.0f));
 
         glm::vec3 rgb;
         if (h < 1.0f)      rgb = glm::vec3(c, x, 0.0f);
@@ -45,16 +46,18 @@ namespace Utils {
 
     struct LensingData {
         glm::vec2 screenUV = glm::vec2(0.5f);
-        float horizonRadiusUV = 0.05f;
+        GLfloat horizonRadiusUV = 0.05f;
+        GLboolean visible = false;
     };
 
-    inline LensingData ComputeLensingData(const glm::vec3& sphereWorldPos, float sphereRadius,
+    inline LensingData ComputeLensingData(const glm::vec3& sphereWorldPos, GLfloat sphereRadius,
         const Camera& camera, const glm::mat4& view, const glm::mat4& projection) {
         LensingData result;
 
         glm::vec4 clipPos = projection * view * glm::vec4(sphereWorldPos, 1.0f);
         if (clipPos.w <= 0.0f) return result;
 
+        result.visible = true;
         glm::vec3 ndc = glm::vec3(clipPos) / clipPos.w;
         result.screenUV = glm::vec2(ndc.x, ndc.y) * 0.5f + 0.5f;
 

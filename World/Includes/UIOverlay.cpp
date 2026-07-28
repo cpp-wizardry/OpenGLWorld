@@ -6,20 +6,20 @@ namespace {
         auto data = Primitives::RectQuad(-0.95f, 0.75f, -0.75f, 0.95f);
         return Mesh(data.vertices, { {0, 2} });
     }
-    Mesh MakeCrosshair(float aspect, float thickness, float length) {
+    Mesh MakeCrosshair(GLfloat aspect, GLfloat thickness, GLfloat length) {
         auto data = Primitives::Crosshair(aspect, thickness, length);
         return Mesh(data.vertices, { {0, 2} });
     }
 }
 
-UIOverlay::UIOverlay(float aspectRatio, float crosshairThickness, float crosshairLength)
+UIOverlay::UIOverlay(GLfloat aspectRatio, GLfloat crosshairThickness, GLfloat crosshairLength)
     : swatchMesh(MakeSwatch()),
     crosshairMesh(MakeCrosshair(aspectRatio, crosshairThickness, crosshairLength)),
     thickness(crosshairThickness), length(crosshairLength)
 {
 }
 
-void UIOverlay::SetAspectRatio(float aspectRatio) {
+void UIOverlay::SetAspectRatio(GLfloat aspectRatio) {
     crosshairMesh = MakeCrosshair(aspectRatio, thickness, length);
 }
 

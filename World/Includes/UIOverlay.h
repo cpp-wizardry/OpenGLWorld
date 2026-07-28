@@ -5,13 +5,13 @@
 
 class UIOverlay {
 public:
-    UIOverlay(float aspectRatio, float crosshairThickness = 0.005f, float crosshairLength = 0.05f);
+    UIOverlay(GLfloat aspectRatio, GLfloat crosshairThickness = 0.005f, GLfloat crosshairLength = 0.05f);
 
-    void SetAspectRatio(float aspectRatio);
+    void SetAspectRatio(GLfloat aspectRatio);
     void Draw(Shader& uiShader, const glm::vec3& color) const;
 
 private:
     Mesh swatchMesh;
     Mesh crosshairMesh;
-    float thickness, length;
+    GLfloat thickness, length;
 };
