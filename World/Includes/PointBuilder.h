@@ -146,7 +146,7 @@ inline glm::vec3 GetClickPoint(const glm::vec3& origin, const glm::vec3& dir, fl
 inline glm::vec3 HueToRGB(float hueDegrees)
 {
     float h = hueDegrees / 60.0f;
-    float c = 1.0f; // full saturation & value
+    float c = 1.0f;
     float x = c * (1.0f - std::fabs(std::fmod(h, 2.0f) - 1.0f));
 
     glm::vec3 rgb;
