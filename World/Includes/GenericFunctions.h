@@ -12,16 +12,13 @@ enum OPEN_MODES
 	CONFIG
 };
 
-void processInput(GLFWwindow* window, float dt);
-void getPlaneData(int& height, int& width);
-
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+void processInput(GLFWwindow* window, float dt);
 void processInputsObject(GLFWwindow* window, glm::vec3& objectPos, glm::vec3& objectRotation, float deltaTime);
 
-void generatePlanePoints(float* planeVertices, float width, float height);
-
-void dynamicPlaneDraw(float* planeVertices,size_t count, unsigned int& planeVAO, unsigned int& planeVBO);
-
+void getPlaneData(int& height, int& width);
 void GetPathPrompt(HWND window, OPEN_MODES filter);
 

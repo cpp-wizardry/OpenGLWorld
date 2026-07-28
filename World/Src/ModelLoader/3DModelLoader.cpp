@@ -1,10 +1,12 @@
-//3DModelLoader.cpp
 #include "3DModelLoader.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include "Windows.h"
 
-
-std::vector<MeshData> Manager3D::loadOBJ(const std::string& Path) {
-    std::vector<MeshData> meshes;
-    MeshData currentMesh;
+std::vector<RawMeshData> Manager3D::loadOBJ(const std::string& Path) {
+    std::vector<RawMeshData> meshes;
+    RawMeshData currentMesh;
     std::vector<glm::vec3> positions;
     std::vector<glm::vec2> texcoords;
     std::vector<glm::vec3> normals;
@@ -113,16 +115,13 @@ std::vector<MeshData> Manager3D::loadOBJ(const std::string& Path) {
     return meshes;
 }
 
-
-
 void Manager3D::centerAndNormalizeOBJ(std::vector<GLfloat>& vertices) {
     if (vertices.empty()) return;
 
     glm::vec3 mini(FLT_MAX);
-   
     glm::vec3 maxi(-FLT_MAX);
 
-    for (GLsizei i = 0; i < vertices.size(); i += 8) {
+    for (size_t i = 0; i < vertices.size(); i += 8) {
         glm::vec3 pos(vertices[i], vertices[i + 1], vertices[i + 2]);
 
         mini.x = min(mini.x, pos.x);
@@ -135,8 +134,7 @@ void Manager3D::centerAndNormalizeOBJ(std::vector<GLfloat>& vertices) {
     }
 
     glm::vec3 center = (mini + maxi) / 2.0f;
-    GLfloat maxExtent = max( maxi.x - mini.x, maxi.y - mini.y, maxi.z - mini.z);
-
+    GLfloat maxExtent = max(maxi.x - mini.x, max(maxi.y - mini.y, maxi.z - mini.z));
 
     for (size_t i = 0; i < vertices.size(); i += 8) {
         vertices[i + 0] = (vertices[i + 0] - center.x) / maxExtent;
@@ -145,58 +143,23 @@ void Manager3D::centerAndNormalizeOBJ(std::vector<GLfloat>& vertices) {
     }
 }
 
+std::vector<Mesh> Manager3D::LoadModel(const std::string& path) {
+    std::vector<Mesh> meshes;
+    if (path.empty()) return meshes;
 
-
-std::vector<GLsizei> Manager3D::reloadModel(const std::string& path,std::vector<GLuint>& VBOs,std::vector<GLuint>& VAOs)
-{
-    if (path.empty()) return {};
-
-    std::vector<MeshData> newMeshes = loadOBJ(path);
-    if (newMeshes.empty()) {
-        std::cerr << "reloadModel: failed to load OBJ: " << path << "\n";
-        return {};
+    std::vector<RawMeshData> raw = loadOBJ(path);
+    if (raw.empty()) {
+        std::cerr << "LoadModel: failed to load OBJ: " << path << "\n";
+        return meshes;
     }
 
-
-    if (!VBOs.empty()) {
-        glDeleteBuffers(static_cast<GLsizei>(VBOs.size()), VBOs.data());
-        glDeleteVertexArrays(static_cast<GLsizei>(VAOs.size()), VAOs.data());
+    meshes.reserve(raw.size());
+    for (auto& m : raw) {
+        centerAndNormalizeOBJ(m.vertices);
+        meshes.emplace_back(m.vertices, std::vector<VertexAttribute>{ {0, 3}, { 1, 2 }, { 2, 3 } });
     }
-
-    VBOs.resize(newMeshes.size());
-    VAOs.resize(newMeshes.size());
-    glGenVertexArrays(newMeshes.size(), VAOs.data());
-    glGenBuffers(newMeshes.size(), VBOs.data());
-
-    std::vector<GLsizei> vertexCounts(newMeshes.size());
-
-    for (GLsizei i = 0; i < newMeshes.size(); i++) {
-        centerAndNormalizeOBJ(newMeshes[i].vertices);
-
-        glBindVertexArray(VAOs[i]);
-        glBindBuffer(GL_ARRAY_BUFFER, VBOs[i]);
-
-        glBufferData(GL_ARRAY_BUFFER,
-            newMeshes[i].vertices.size() * sizeof(GLfloat),
-            newMeshes[i].vertices.data(),
-            GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
-        glEnableVertexAttribArray(2);
-
-        vertexCounts[i] = newMeshes[i].vertices.size() / 8;
-    }
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    return vertexCounts;
+    return meshes;
 }
-
 
 GLuint Manager3D::reloadTexture(const std::string& path, GLuint oldTexture) {
     if (!path.empty()) {
@@ -206,13 +169,9 @@ GLuint Manager3D::reloadTexture(const std::string& path, GLuint oldTexture) {
         GLuint newTex = loadTexture(path.c_str());
         if (newTex == 0) {
             std::cerr << "reloadTexture: failed to load: " << path << "\n";
-            return oldTexture; 
+            return oldTexture;
         }
         return newTex;
     }
     return oldTexture;
 }
-
-
-
-

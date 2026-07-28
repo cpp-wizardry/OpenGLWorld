@@ -1,38 +1,49 @@
-//GenericFunctions.cpp
-#include "../includes/GenericFunctions.h"
+#include "../Includes/GenericFunctions.h"
+#include "../Src/ModelLoader/AppCon.h"
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    static float lastX = 800 / 2, lastY = 600 / 2;
-    
+    static float lastX = 0.0f, lastY = 0.0f;
     static bool first = true;
-    if (first) { lastX = xpos; lastY = ypos; first = false; }
+    if (first) { lastX = static_cast<float>(xpos); lastY = static_cast<float>(ypos); first = false; }
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos; lastY = ypos;
+    float xoffset = static_cast<float>(xpos) - lastX;
+    float yoffset = lastY - static_cast<float>(ypos);
+    lastX = static_cast<float>(xpos);
+    lastY = static_cast<float>(ypos);
 
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    cam->ProcessMouse(xoffset, yoffset);
+    AppContext* ctx = static_cast<AppContext*>(glfwGetWindowUserPointer(window));
+    if (ctx && ctx->camera) {
+        ctx->camera->ProcessMouse(xoffset, yoffset);
+    }
 }
 
-
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    AppContext* ctx = static_cast<AppContext*>(glfwGetWindowUserPointer(window));
+    if (ctx) {
+        ctx->Colors.OnScroll(yoffset);
+    }
+}
 
 void processInput(GLFWwindow* window, float dt) {
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+    AppContext* ctx = static_cast<AppContext*>(glfwGetWindowUserPointer(window));
+    if (!ctx || !ctx->camera) return;
+    Camera* cam = ctx->camera;
+
     bool isMoving = false;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { cam->MoveForward(dt); isMoving = true; }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {cam->MoveBackward(dt);}
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {cam->MoveLeft(dt);}
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {cam->MoveRight(dt);}
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwTerminate();
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cam->MoveBackward(dt);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cam->MoveLeft(dt);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cam->MoveRight(dt);
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-    cam->UpdateFOV(isMoving,dt);
+    cam->UpdateFOV(isMoving, dt);
 }
 
-
-
-void processInputsObject(GLFWwindow* window, glm::vec3& objectPos, glm::vec3& objectRotation, float deltaTime)
-{
+void processInputsObject(GLFWwindow* window, glm::vec3& objectPos, glm::vec3& objectRotation, float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) objectPos.z -= 3.0f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) objectPos.z += 3.0f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) objectPos.x -= 3.0f * deltaTime;
@@ -42,67 +53,20 @@ void processInputsObject(GLFWwindow* window, glm::vec3& objectPos, glm::vec3& ob
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) objectPos = glm::vec3(0, 0.5f, 0);
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) objectRotation.x += 9.0f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) objectRotation.x -= 9.0f * deltaTime;
-
 }
 
-
-void dynamicPlaneDraw(float* planeVertices, size_t count,
-    unsigned int& planeVAO, unsigned int& planeVBO)
-{
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-
-    glBindVertexArray(planeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(float), planeVertices, GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-}
-
-
-void getPlaneData(int& height, int& width)
-{
+void getPlaneData(int& height, int& width) {
     std::cout << "height : ";
     std::cin >> height;
     std::cout << "\nwidth : ";
     std::cin >> width;
 }
 
-
-void generatePlanePoints(float* planeVertices,float width, float height)
-{
-    float nx = 0.0f, ny = 1.0f, nz = 0.0f;
-
-    std::vector<float> vertices = {
-        0,      0,      0,    nx,ny,nz,     0,0,
-        width,  0,      0,    nx,ny,nz,     1,0,
-        width,  0,  height,   nx,ny,nz,     1,1,
-        0,      0,  height,   nx,ny,nz,     0,1
-    };
-
-    for (size_t i = 0; i < 32; i++)
-    {
-        planeVertices[i] = vertices[i];
-    }
-}
-
-
-
-void GetPathPrompt(HWND window,OPEN_MODES filter)
-{
+void GetPathPrompt(HWND window, OPEN_MODES filter) {
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
-    switch (filter)
-    {
+    switch (filter) {
     case AUDIO:
         ofn.lpstrFilter = L"Audio Files *.wav;*.mp3;";
         break;
@@ -111,7 +75,6 @@ void GetPathPrompt(HWND window,OPEN_MODES filter)
         break;
     case GENERAL_PURPOSE:
         ofn.lpstrFilter = L"General purposes files *.*;";
-
         break;
     case OBJECT3D:
         ofn.lpstrFilter = L"Supported 3D files *.obj;";

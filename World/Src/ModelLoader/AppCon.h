@@ -2,15 +2,19 @@
 #pragma once
 #include "3DModelLoader.h"
 #include "../../Includes/PointBuilder.h"
-
+#include "../../Includes/ColorPicker.h"
+#include "../../Includes/Camera.h"
+#include <vector>
+#include <string>
 struct AppContext {    
     
     Manager3D Mng3D;
-    std::vector<GLuint> VBOs; //changed it so I can have multiple independent objects
-    std::vector<GLuint> VAOs;
+    std::vector<Mesh> modelMeshes;
     GLuint texture = 0;
-    std::vector<GLsizei> vertexCounts;
-    //AudioManager* audio;
     std::string currentAudioPath;
+
     PointBuilder Pbuild;
+    ColorPicker Colors;
+
+    Camera* camera = nullptr;
 };
