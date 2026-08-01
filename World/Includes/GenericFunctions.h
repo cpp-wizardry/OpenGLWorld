@@ -1,7 +1,7 @@
 //GenericFunctions.h
 #pragma once
 #include "stdafx.h"
-
+#include "../Src/ModelLoader/AppCon.h"
 using std::string;
 enum OPEN_MODES
 {
@@ -10,6 +10,10 @@ enum OPEN_MODES
 	GENERAL_PURPOSE,
 	OBJECT3D,
 	CONFIG
+};
+struct RollingModel {
+	Animator anim;
+	std::vector<Mesh> meshes;
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -21,4 +25,5 @@ void processInputsObject(GLFWwindow* window, glm::vec3& objectPos, glm::vec3& ob
 
 void getPlaneData(int& height, int& width);
 void GetPathPrompt(HWND window, OPEN_MODES filter);
-
+void SpawnRollingCube(std::vector<AnimatedObject>& list, const Primitives::MeshData& cubeData, const glm::vec3& position);
+void SpawnRollingModel(std::vector<RollingModel>& list, Manager3D& mng, const std::string& path, const glm::vec3& position);

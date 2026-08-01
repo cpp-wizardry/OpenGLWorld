@@ -1,12 +1,49 @@
 //main.cpp
+#include <algorithm>
 #include "../Includes/GenericFunctions.h"
 #include "../Includes/Skybox.h"
 #include "ModelLoader/AppCon.h"
-#include "../Includes/Primitives.h"
 #include "../Includes/FrameBuffer.h"
 #include "../Includes/BlackHole.h"
 #include "../Includes/UIOverlay.h"
 #include "../Includes/Utils.h"
+
+
+Primitives::MeshData CreateCubeMesh(GLfloat size) {
+    Primitives::MeshData data;
+    GLfloat h = size * 0.5f;
+
+    auto pushVert = [&](glm::vec3 pos, glm::vec2 uv, glm::vec3 normal) {
+        data.vertices.insert(data.vertices.end(), {
+            pos.x, pos.y, pos.z,
+            uv.x, uv.y,
+            normal.x, normal.y, normal.z
+            });
+        };
+
+    auto pushFace = [&](glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d, glm::vec3 normal) {
+        GLuint base = static_cast<GLuint>(data.vertices.size() / 8);
+        pushVert(a, glm::vec2(0, 0), normal);
+        pushVert(b, glm::vec2(1, 0), normal);
+        pushVert(c, glm::vec2(1, 1), normal);
+        pushVert(d, glm::vec2(0, 1), normal);
+        data.indices.insert(data.indices.end(), {
+            base + 0, base + 1, base + 2,
+            base + 2, base + 3, base + 0
+            });
+        };
+
+    pushFace({ -h,-h, h }, { h,-h, h }, { h, h, h }, { -h, h, h }, { 0, 0, 1 });
+    pushFace({ h,-h,-h }, { -h,-h,-h }, { -h, h,-h }, { h, h,-h }, { 0, 0,-1 });
+    pushFace({ -h,-h,-h }, { -h,-h, h }, { -h, h, h }, { -h, h,-h }, { -1, 0, 0 });
+    pushFace({ h,-h, h }, { h,-h,-h }, { h, h,-h }, { h, h, h }, { 1, 0, 0 });
+    pushFace({ -h, h, h }, { h, h, h }, { h, h,-h }, { -h, h,-h }, { 0, 1, 0 });
+    pushFace({ -h,-h,-h }, { h,-h,-h }, { h,-h, h }, { -h,-h, h }, { 0,-1, 0 });
+
+    return data;
+}
+
+
 
 int main() {
     glfwInit();
@@ -71,7 +108,12 @@ int main() {
     UIOverlay ui(static_cast<GLfloat>(sceneWidth) / static_cast<GLfloat>(sceneHeight));
 
     ctx.modelMeshes = ctx.Mng3D.LoadModel(RootPath("assets/models/Bush.obj"));
+    auto cubeData = CreateCubeMesh(1.0f);
+    AnimatedObject cube(cubeData.vertices, cubeData.indices, { {0, 3}, {1, 2}, {2, 3} });
+    cube.SetBasePosition(glm::vec3(10.0f, 0.0f, 10.0f));
 
+    std::vector<RollingModel> rollingObjects;
+    static const std::string kRollingModelPath = "assets/models/Bird.obj";
     glm::vec3 objectPos(0, 0.5f, 0);
     glm::vec3 objectRotation(0, 0, 0);
     GLfloat lastFrame = 0;
@@ -93,26 +135,37 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
             static GLfloat lastPress = 0;
             if (currentFrame - lastPress > 0.5f) {
-                ctx.modelMeshes = ctx.Mng3D.LoadModel(RootPath("assets/models/Bush.obj"));
+                ctx.modelMeshes = ctx.Mng3D.LoadModel(RootPath("assets/models/Bird.obj"));
                 lastPress = currentFrame;
                 std::cout << "Model reloaded!\n";
-            }
+            }   
         }
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
             static GLfloat lastClick = 0;
             if (currentFrame - lastClick > 0.2f) {
                 glm::vec3 clickPoint = Utils::GetClickPoint(camera.Position, camera.Front, 10.0f);
-
-                int nearest = ctx.Pbuild.FindNearestPoint(clickPoint, 0.3f);
-                if (nearest >= 0) {
-                    ctx.Pbuild.SelectPoint(nearest);
-                }
-                else {
-                    ctx.Pbuild.AddPoint(clickPoint, ctx.Colors.CurrentColor());
-                    ctx.Pbuild.SelectPoint(static_cast<int>(ctx.Pbuild.points.size()) - 1);
-                }
+                ctx.Pbuild.AddPoint(clickPoint, ctx.Colors.CurrentColor());
                 lastClick = currentFrame;
+
+                if (ctx.Pbuild.activeChain.size() % 4 == 0) {
+                    glm::vec3 centroid(0.0f);
+                    for (int idx : ctx.Pbuild.activeChain) centroid += ctx.Pbuild.points[idx];
+                    centroid /= 4.0f;
+                    centroid.y += 0.5f; 
+
+                    SpawnRollingModel(rollingObjects, ctx.Mng3D, kRollingModelPath, centroid);
+                    ctx.Pbuild.ResetChain(); 
+                }
+            }
+        }
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            static GLfloat lastRightClick = 0;
+            if (currentFrame - lastRightClick > 0.2f) {
+                ctx.Pbuild.ResetChain();
+                lastRightClick = currentFrame;
+                std::cout << "Chain reset - next point starts a new group\n";
             }
         }
 
@@ -133,6 +186,50 @@ int main() {
                 std::cout << "Black hole " << (blackHole.Enabled ? "enabled" : "disabled") << "\n";
             }
         }
+
+        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+            static GLfloat lastG = 0;
+            if (currentFrame - lastG > 0.4f) {
+                if (cube.IsRotating()) {
+                    cube.StopRotate();
+                    std::cout << "Cube rotation stopped\n";
+                }
+                else {
+                    cube.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 90.0f);
+                    std::cout << "Cube rotation started\n";
+                }
+                lastG = currentFrame;
+            }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
+            static GLfloat lastH = 0;
+            if (currentFrame - lastH > 0.4f) {
+                cube.Vibrate(0.15f, 12.0f, 0.5f);
+                lastH = currentFrame;
+                std::cout << "Cube vibrating\n";
+            }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+            static GLfloat lastJ = 0;
+            if (currentFrame - lastJ > 0.4f) {
+                glm::vec3 current = ctx.AnimObj.GetPose().position;
+                cube.Transform(current + glm::vec3(0.0f, 0.0f, -3.0f), 1.0f);
+                lastJ = currentFrame;
+                std::cout << "Cube moving forward\n";
+            }
+        }
+
+        ctx.AnimObj.Update(deltaTime);
+        cube.Update(deltaTime);
+
+        for (auto& obj : rollingObjects) obj.anim.Update(deltaTime);
+        rollingObjects.erase(
+            std::remove_if(rollingObjects.begin(), rollingObjects.end(),
+                [](const RollingModel& o) { return !o.anim.IsSpinning(); }),
+            rollingObjects.end()
+        );
 
         processInputsObject(window, objectPos, objectRotation, deltaTime);
 
@@ -158,6 +255,14 @@ int main() {
         modelShader.setVec3("viewPos", camera.Position);
         modelShader.setVec3("lightDir", glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f)));
         for (auto& mesh : ctx.modelMeshes) mesh.Draw(GL_TRIANGLES);
+
+        modelShader.setMat4("model", cube.GetModelMatrix());
+        cube.Draw(GL_TRIANGLES);
+
+        for (auto& obj : rollingObjects) {
+            modelShader.setMat4("model", obj.anim.GetPose().GetModelMatrix());
+            for (auto& mesh : obj.meshes) mesh.Draw(GL_TRIANGLES);
+        }
 
         blackHole.Draw(blackholeShader, diskShader, view, projection, currentFrame);
 

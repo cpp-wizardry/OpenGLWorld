@@ -1,5 +1,5 @@
 #include "../Includes/GenericFunctions.h"
-#include "../Src/ModelLoader/AppCon.h"
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -89,4 +89,20 @@ void GetPathPrompt(HWND window, OPEN_MODES filter) {
     ofn.nMaxFile = MAX_PATH;
     auto temp = GetOpenFileName(&ofn);
     std::cout << temp;
+}
+
+
+void SpawnRollingCube(std::vector<AnimatedObject>& list, const Primitives::MeshData& cubeData, const glm::vec3& position) {
+    AnimatedObject obj(cubeData.vertices, cubeData.indices, { {0, 3}, {1, 2}, {2, 3} });
+    obj.SetBasePosition(position);
+    obj.Spin(glm::vec3(1.0f, 0.0f, 0.0f), 3.0f, 2.4f, EaseType::EaseInOut); 
+    list.push_back(std::move(obj));
+}
+
+void SpawnRollingModel(std::vector<RollingModel>& list, Manager3D& mng, const std::string& path, const glm::vec3& position) {
+    RollingModel obj;
+    obj.meshes = mng.LoadModel(RootPath(path));
+    obj.anim.SetBasePosition(position);
+    obj.anim.Spin(glm::vec3(1.0f, 0.0f, 0.0f), 3.0f, 2.4f, EaseType::EaseInOut);
+    list.push_back(std::move(obj));
 }

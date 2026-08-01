@@ -4,10 +4,12 @@
 #include "../../Includes/PointBuilder.h"
 #include "../../Includes/ColorPicker.h"
 #include "../../Includes/Camera.h"
+#include "../../Includes/AnimObject.h"
+#include "../../Includes/Primitives.h"
 #include <vector>
 #include <string>
-struct AppContext {    
-    
+struct AppContext {
+
     Manager3D Mng3D;
     std::vector<Mesh> modelMeshes;
     GLuint texture = 0;
@@ -15,6 +17,8 @@ struct AppContext {
 
     PointBuilder Pbuild;
     ColorPicker Colors;
+
+    AnimatedObject AnimObj;
 
     Camera* camera = nullptr;
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <vector>
+#include <limits>
 #include "Mesh.h"
 #include "Shader.h"
 
@@ -9,12 +10,43 @@ public:
     std::vector<glm::vec3> points;
     std::vector<glm::vec3> colors;
     std::vector<unsigned int> indices;
-    std::vector<int> pending;
+
+    std::vector<int> activeChain;
 
     void AddPoint(const glm::vec3& pos, const glm::vec3& color) {
+        int newIndex = static_cast<int>(points.size());
         points.push_back(pos);
         colors.push_back(color);
+
+        if (activeChain.size() >= 2) {
+            int nearest1 = -1, nearest2 = -1;
+            float d1 = std::numeric_limits<float>::max();
+            float d2 = std::numeric_limits<float>::max();
+
+            for (int idx : activeChain) {
+                float d = glm::length(points[idx] - pos);
+                if (d < d1) {
+                    d2 = d1; nearest2 = nearest1;
+                    d1 = d;  nearest1 = idx;
+                }
+                else if (d < d2) {
+                    d2 = d; nearest2 = idx;
+                }
+            }
+
+            if (nearest1 >= 0 && nearest2 >= 0) {
+                indices.push_back(static_cast<unsigned int>(newIndex));
+                indices.push_back(static_cast<unsigned int>(nearest1));
+                indices.push_back(static_cast<unsigned int>(nearest2));
+            }
+        }
+
+        activeChain.push_back(newIndex);
         dirty = true;
+    }
+
+    void ResetChain() {
+        activeChain.clear();
     }
 
     int FindNearestPoint(const glm::vec3& pos, float radius) const {
@@ -27,22 +59,11 @@ public:
         return best;
     }
 
-    void SelectPoint(int index) {
-        pending.push_back(index);
-        if (pending.size() == 3) {
-            indices.push_back(pending[0]);
-            indices.push_back(pending[1]);
-            indices.push_back(pending[2]);
-            pending.clear();
-            dirty = true;
-        }
-    }
-
     void Clear() {
         points.clear();
         colors.clear();
         indices.clear();
-        pending.clear();
+        activeChain.clear();
         dirty = true;
     }
 
@@ -67,7 +88,6 @@ public:
 private:
     void Update() {
         if (!dirty) return;
-
         std::vector<float> interleaved;
         interleaved.reserve(points.size() * 6);
         for (size_t i = 0; i < points.size(); i++) {
@@ -78,7 +98,6 @@ private:
             interleaved.push_back(colors[i].g);
             interleaved.push_back(colors[i].b);
         }
-
         if (!mesh.IsValid()) {
             mesh = Mesh(interleaved, { {0, 3}, {1, 3} }, GL_DYNAMIC_DRAW);
         }
@@ -86,10 +105,8 @@ private:
             mesh.UpdateVertices(interleaved);
         }
         if (!indices.empty()) mesh.UpdateIndices(indices);
-
         dirty = false;
     }
-
     Mesh mesh;
     bool dirty = true;
 };
