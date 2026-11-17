@@ -13,7 +13,6 @@ enum OPEN_MODES
 };
 struct RollingModel {
 	Animator anim;
-	std::vector<Mesh> meshes;
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -26,4 +25,5 @@ void processInputsObject(GLFWwindow* window, glm::vec3& objectPos, glm::vec3& ob
 void getPlaneData(int& height, int& width);
 void GetPathPrompt(HWND window, OPEN_MODES filter);
 void SpawnRollingCube(std::vector<AnimatedObject>& list, const Primitives::MeshData& cubeData, const glm::vec3& position);
-void SpawnRollingModel(std::vector<RollingModel>& list, Manager3D& mng, const std::string& path, const glm::vec3& position);
+void SpawnRollingModel(std::vector<RollingModel>& list, const glm::vec3& position);
+Primitives::MeshData CreateCubeMesh(GLfloat size);

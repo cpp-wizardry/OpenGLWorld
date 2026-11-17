@@ -160,7 +160,7 @@ std::vector<Mesh> Manager3D::LoadModel(const std::string& path) {
     }
     return meshes;
 }
-
+/*
 GLuint Manager3D::reloadTexture(const std::string& path, GLuint oldTexture) {
     if (!path.empty()) {
         if (oldTexture != 0) {
@@ -174,4 +174,4 @@ GLuint Manager3D::reloadTexture(const std::string& path, GLuint oldTexture) {
         return newTex;
     }
     return oldTexture;
-}
+}*/

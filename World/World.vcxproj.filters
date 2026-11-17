@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Fichiers de ressources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Loader">
+      <UniqueIdentifier>{b08c9827-66c1-4138-9510-9ac26d78f938}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{978865b9-2f56-4736-b0af-27074a4b5bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BlackHole">
+      <UniqueIdentifier>{3c9fa273-99cd-4d3a-9c11-3ac8c69da308}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JennaIdeas">
+      <UniqueIdentifier>{99569a30-6b1e-4237-9f24-d8a62f6cc96d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Src\Main.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ModelLoader\3DModelLoader.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\glad.c">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Skybox.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\GenericFunctions.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ModelLoader\Mesh.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ModelLoader\BlackHole.cpp">
+      <Filter>BlackHole</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ModelLoader\Primitives.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\FrameBuffer.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\UIOverlay.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Animator.cpp">
+      <Filter>JennaIdeas</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\AnimObject.cpp">
+      <Filter>JennaIdeas</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Particle.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\TextureManager.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Src\ModelLoader\3DModelLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\ModelLoader\AppCon.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\ModelLoader\stb_image.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Camera.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Shader.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Skybox.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\GenericFunctions.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="pathing.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\PointBuilder.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Mesh.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\ColorPicker.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Utils.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\BlackHole.h">
+      <Filter>BlackHole</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Primitives.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\FrameBuffer.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\UIOverlay.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\AnimObject.h">
+      <Filter>JennaIdeas</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Animator.h">
+      <Filter>JennaIdeas</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Particle.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\TextureManager.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\model.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\model.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\plane.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\plane.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\skybox.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\skybox.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\point.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\point.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\UI.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\UI.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\BlackHole.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\BlackHole.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\horizon.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\horizon.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\distort.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\distort.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="particle.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\particle.frag">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

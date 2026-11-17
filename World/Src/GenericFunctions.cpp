@@ -98,11 +98,43 @@ void SpawnRollingCube(std::vector<AnimatedObject>& list, const Primitives::MeshD
     obj.Spin(glm::vec3(1.0f, 0.0f, 0.0f), 3.0f, 2.4f, EaseType::EaseInOut); 
     list.push_back(std::move(obj));
 }
-
-void SpawnRollingModel(std::vector<RollingModel>& list, Manager3D& mng, const std::string& path, const glm::vec3& position) {
+ void SpawnRollingModel(std::vector<RollingModel>& list, const glm::vec3& position) {
     RollingModel obj;
-    obj.meshes = mng.LoadModel(RootPath(path));
     obj.anim.SetBasePosition(position);
     obj.anim.Spin(glm::vec3(1.0f, 0.0f, 0.0f), 3.0f, 2.4f, EaseType::EaseInOut);
     list.push_back(std::move(obj));
+}
+
+Primitives::MeshData CreateCubeMesh(GLfloat size) {
+    Primitives::MeshData data;
+    GLfloat h = size * 0.5f;
+
+    auto pushVert = [&](glm::vec3 pos, glm::vec2 uv, glm::vec3 normal) {
+        data.vertices.insert(data.vertices.end(), {
+            pos.x, pos.y, pos.z,
+            uv.x, uv.y,
+            normal.x, normal.y, normal.z
+            });
+        };
+
+    auto pushFace = [&](glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d, glm::vec3 normal) {
+        GLuint base = static_cast<GLuint>(data.vertices.size() / 8);
+        pushVert(a, glm::vec2(0, 0), normal);
+        pushVert(b, glm::vec2(1, 0), normal);
+        pushVert(c, glm::vec2(1, 1), normal);
+        pushVert(d, glm::vec2(0, 1), normal);
+        data.indices.insert(data.indices.end(), {
+            base + 0, base + 1, base + 2,
+            base + 2, base + 3, base + 0
+            });
+        };
+
+    pushFace({ -h,-h, h }, { h,-h, h }, { h, h, h }, { -h, h, h }, { 0, 0, 1 });
+    pushFace({ h,-h,-h }, { -h,-h,-h }, { -h, h,-h }, { h, h,-h }, { 0, 0,-1 });
+    pushFace({ -h,-h,-h }, { -h,-h, h }, { -h, h, h }, { -h, h,-h }, { -1, 0, 0 });
+    pushFace({ h,-h, h }, { h,-h,-h }, { h, h,-h }, { h, h, h }, { 1, 0, 0 });
+    pushFace({ -h, h, h }, { h, h, h }, { h, h,-h }, { -h, h,-h }, { 0, 1, 0 });
+    pushFace({ -h,-h,-h }, { h,-h,-h }, { h,-h, h }, { -h,-h, h }, { 0,-1, 0 });
+
+    return data;
 }

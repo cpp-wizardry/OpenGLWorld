@@ -6,6 +6,7 @@
 #include "../../Includes/Camera.h"
 #include "../../Includes/AnimObject.h"
 #include "../../Includes/Primitives.h"
+#include "../../Includes/TextureManager.h"
 #include <vector>
 #include <string>
 struct AppContext {
@@ -15,6 +16,7 @@ struct AppContext {
     GLuint texture = 0;
     std::string currentAudioPath;
 
+    TextureManager TexMng;
     PointBuilder Pbuild;
     ColorPicker Colors;
 

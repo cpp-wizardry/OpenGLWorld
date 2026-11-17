@@ -7,43 +7,7 @@
 #include "../Includes/BlackHole.h"
 #include "../Includes/UIOverlay.h"
 #include "../Includes/Utils.h"
-
-
-Primitives::MeshData CreateCubeMesh(GLfloat size) {
-    Primitives::MeshData data;
-    GLfloat h = size * 0.5f;
-
-    auto pushVert = [&](glm::vec3 pos, glm::vec2 uv, glm::vec3 normal) {
-        data.vertices.insert(data.vertices.end(), {
-            pos.x, pos.y, pos.z,
-            uv.x, uv.y,
-            normal.x, normal.y, normal.z
-            });
-        };
-
-    auto pushFace = [&](glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d, glm::vec3 normal) {
-        GLuint base = static_cast<GLuint>(data.vertices.size() / 8);
-        pushVert(a, glm::vec2(0, 0), normal);
-        pushVert(b, glm::vec2(1, 0), normal);
-        pushVert(c, glm::vec2(1, 1), normal);
-        pushVert(d, glm::vec2(0, 1), normal);
-        data.indices.insert(data.indices.end(), {
-            base + 0, base + 1, base + 2,
-            base + 2, base + 3, base + 0
-            });
-        };
-
-    pushFace({ -h,-h, h }, { h,-h, h }, { h, h, h }, { -h, h, h }, { 0, 0, 1 });
-    pushFace({ h,-h,-h }, { -h,-h,-h }, { -h, h,-h }, { h, h,-h }, { 0, 0,-1 });
-    pushFace({ -h,-h,-h }, { -h,-h, h }, { -h, h, h }, { -h, h,-h }, { -1, 0, 0 });
-    pushFace({ h,-h, h }, { h,-h,-h }, { h, h,-h }, { h, h, h }, { 1, 0, 0 });
-    pushFace({ -h, h, h }, { h, h, h }, { h, h,-h }, { -h, h,-h }, { 0, 1, 0 });
-    pushFace({ -h,-h,-h }, { h,-h,-h }, { h,-h, h }, { -h,-h, h }, { 0,-1, 0 });
-
-    return data;
-}
-
-
+#include "../Includes/Particle.h"
 
 int main() {
     glfwInit();
@@ -66,6 +30,9 @@ int main() {
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_PROGRAM_POINT_SIZE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    AppContext ctx;
 
     Shader modelShader("Shaders/model.vert", "Shaders/model.frag");
     Shader skyboxShader("Shaders/skybox.vert", "Shaders/skybox.frag");
@@ -75,10 +42,38 @@ int main() {
     Shader blackholeShader("Shaders/blackHole.vert", "Shaders/blackHole.frag");
     Shader diskShader("Shaders/horizon.vert", "Shaders/horizon.frag");
     Shader distortShader("Shaders/distort.vert", "Shaders/distort.frag");
+    Shader particleShader("Shaders/particle.vert", "Shaders/particle.frag");
+
+
+
+    ParticleSystem sparks(5000);
+
+    GLuint smokeTex = ctx.TexMng.LoadTexture(RootPath("assets/textures/smoke.png"));
+    ParticleSystem smoke(500);
+    smoke.SetTexture(smokeTex);
+    ParticleEmitConfig smokeCfg;
+    smokeCfg.color = glm::vec3(1.0f);               
+    smokeCfg.velocityMin = glm::vec3(-0.3f, 0.5f, -0.3f);
+    smokeCfg.velocityMax = glm::vec3(0.3f, 1.2f, 0.3f);
+    smokeCfg.gravity = glm::vec3(0.0f);  
+    smokeCfg.sizeMin = 0.3f; smokeCfg.sizeMax = 0.6f;
+    smokeCfg.lifeMin = 1.5f; smokeCfg.lifeMax = 2.5f;
+    glm::vec3 smokeOrigin(5.0f, 1.0f, 5.0f); 
+
+    ParticleSystem infinityTrail(300);
+    ParticleEmitConfig infinityCfg;
+    infinityCfg.motion = ParticleMotion::Infinity;
+    infinityCfg.patternRadius = 1.5f;
+    infinityCfg.patternSpeed = 2.0f;
+    infinityCfg.patternAxisU = glm::vec3(1.0f, 0.0f, 0.0f);
+    infinityCfg.patternAxisV = glm::vec3(0.0f, 1.0f, 0.0f);
+    infinityCfg.color = glm::vec3(0.6f, 0.9f, 1.0f);
+    infinityCfg.sizeMin = 0.08f; infinityCfg.sizeMax = 0.12f;
+    infinityCfg.lifeMin = 3.0f; infinityCfg.lifeMax = 3.0f;
 
     Camera camera(glm::vec3(0, 2, 6));
 
-    AppContext ctx;
+
     ctx.camera = &camera;
     glfwSetWindowUserPointer(window, &ctx);
 
@@ -112,8 +107,13 @@ int main() {
     AnimatedObject cube(cubeData.vertices, cubeData.indices, { {0, 3}, {1, 2}, {2, 3} });
     cube.SetBasePosition(glm::vec3(10.0f, 0.0f, 10.0f));
 
-    std::vector<RollingModel> rollingObjects;
     static const std::string kRollingModelPath = "assets/models/Bird.obj";
+    std::vector<Mesh> rollingModelMeshes = ctx.Mng3D.LoadModel(RootPath(kRollingModelPath));
+    std::vector<RollingModel> rollingObjects;
+
+    smoke.StartLoop(smokeOrigin, 15.0f, smokeCfg);
+    infinityTrail.StartLoop(cube.GetPose().position + glm::vec3(0.0f, 1.5f, 0.0f), 20.0f, infinityCfg);
+
     glm::vec3 objectPos(0, 0.5f, 0);
     glm::vec3 objectRotation(0, 0, 0);
     GLfloat lastFrame = 0;
@@ -138,7 +138,7 @@ int main() {
                 ctx.modelMeshes = ctx.Mng3D.LoadModel(RootPath("assets/models/Bird.obj"));
                 lastPress = currentFrame;
                 std::cout << "Model reloaded!\n";
-            }   
+            }
         }
 
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -152,10 +152,14 @@ int main() {
                     glm::vec3 centroid(0.0f);
                     for (int idx : ctx.Pbuild.activeChain) centroid += ctx.Pbuild.points[idx];
                     centroid /= 4.0f;
-                    centroid.y += 0.5f; 
+                    centroid.y += 0.5f;
 
-                    SpawnRollingModel(rollingObjects, ctx.Mng3D, kRollingModelPath, centroid);
-                    ctx.Pbuild.ResetChain(); 
+                    SpawnRollingModel(rollingObjects, centroid);
+                    ParticleEmitConfig burst;
+                    burst.color = glm::vec3(1.0f, 0.8f, 0.3f);
+                    burst.lifeMin = 0.4f; burst.lifeMax = 0.9f;
+                    sparks.Emit(centroid, 40, burst);
+                    ctx.Pbuild.ResetChain();
                 }
             }
         }
@@ -214,7 +218,7 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
             static GLfloat lastJ = 0;
             if (currentFrame - lastJ > 0.4f) {
-                glm::vec3 current = ctx.AnimObj.GetPose().position;
+                glm::vec3 current = cube.GetPose().position;
                 cube.Transform(current + glm::vec3(0.0f, 0.0f, -3.0f), 1.0f);
                 lastJ = currentFrame;
                 std::cout << "Cube moving forward\n";
@@ -223,6 +227,12 @@ int main() {
 
         ctx.AnimObj.Update(deltaTime);
         cube.Update(deltaTime);
+
+        infinityTrail.SetLoopOrigin(cube.GetPose().position + glm::vec3(0.0f, 1.5f, 0.0f));
+
+        sparks.Update(deltaTime);
+        smoke.Update(deltaTime);
+        infinityTrail.Update(deltaTime);
 
         for (auto& obj : rollingObjects) obj.anim.Update(deltaTime);
         rollingObjects.erase(
@@ -261,7 +271,7 @@ int main() {
 
         for (auto& obj : rollingObjects) {
             modelShader.setMat4("model", obj.anim.GetPose().GetModelMatrix());
-            for (auto& mesh : obj.meshes) mesh.Draw(GL_TRIANGLES);
+            for (auto& mesh : rollingModelMeshes) mesh.Draw(GL_TRIANGLES);
         }
 
         blackHole.Draw(blackholeShader, diskShader, view, projection, currentFrame);
@@ -294,8 +304,15 @@ int main() {
         glUniform1i(glGetUniformLocation(distortShader.ID, "sceneTexture"), 0);
         screenQuad.Draw(GL_TRIANGLES);
 
+        glEnable(GL_BLEND);
+
+        sparks.Draw(particleShader, view, projection);
+        smoke.Draw(particleShader, view, projection);
+        infinityTrail.Draw(particleShader, view, projection);
+
         ui.Draw(uiShader, ctx.Colors.CurrentColor());
 
+        glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
 
         glfwSwapBuffers(window);

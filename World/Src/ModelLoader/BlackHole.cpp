@@ -6,6 +6,7 @@ BlackHole::BlackHole(const glm::vec3& position, GLfloat sphereRadius,
     GLfloat diskInnerRadius, GLfloat diskOuterRadius,
     GLint sphereSectors, GLint sphereStacks, GLint diskSegments)
     : Position(position), SphereRadius(sphereRadius),
+    DiskInnerRadius(diskInnerRadius), DiskOuterRadius(diskOuterRadius),
     sphereMesh([&] {
     auto data = Primitives::Sphere(sphereRadius, sphereSectors, sphereStacks);
     return Mesh(data.vertices, data.indices, { {0, 3} });
@@ -17,7 +18,8 @@ BlackHole::BlackHole(const glm::vec3& position, GLfloat sphereRadius,
 {
 }
 
-void BlackHole::Draw(Shader& sphereShader, Shader& diskShader, const glm::mat4& view, const glm::mat4& projection, GLfloat time) const {
+void BlackHole::Draw(Shader& sphereShader, Shader& diskShader,
+    const glm::mat4& view, const glm::mat4& projection, GLfloat time) const {
     if (!Enabled) return;
 
     sphereShader.use();
@@ -25,11 +27,31 @@ void BlackHole::Draw(Shader& sphereShader, Shader& diskShader, const glm::mat4& 
     sphereShader.setMat4("projection", projection);
     sphereShader.setMat4("model", glm::translate(glm::mat4(1.0f), Position));
     sphereMesh.Draw(GL_TRIANGLES);
+
+    GLboolean wasBlend = glIsEnabled(GL_BLEND);
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);   
+    glDepthMask(GL_FALSE);     
+
     diskShader.use();
     diskShader.setMat4("view", view);
     diskShader.setMat4("projection", projection);
+
     glm::mat4 diskModel = glm::translate(glm::mat4(1.0f), Position);
     diskModel = glm::rotate(diskModel, time * 0.4f, glm::vec3(0, 1, 0));
     diskShader.setMat4("model", diskModel);
+
+    diskShader.setFloat("time", time);
+    diskShader.setFloat("innerRadius", DiskInnerRadius);
+    diskShader.setFloat("outerRadius", DiskOuterRadius);
+    diskShader.setInt("ringCount", RingCount);
+
     diskMesh.Draw(GL_TRIANGLES);
+
+    glDepthMask(GL_TRUE);
+    if (!wasBlend) glDisable(GL_BLEND);
+    if (wasCull) glEnable(GL_CULL_FACE);
 }

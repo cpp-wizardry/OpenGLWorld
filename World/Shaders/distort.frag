@@ -19,8 +19,8 @@ void main() {
         FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
-    float falloff = lensStrength / (dist * dist + 0.01);
-    vec2 warpedUV = vUV - normalize(toCenter) * falloff * 0.02;
+    float falloff = lensStrength / (dist * dist + 0.03);
+    vec2 warpedUV = vUV - normalize(toCenter) * falloff * 0.025;
     warpedUV = clamp(warpedUV, 0.0, 1.0);
     FragColor = texture(sceneTexture, warpedUV);
 }

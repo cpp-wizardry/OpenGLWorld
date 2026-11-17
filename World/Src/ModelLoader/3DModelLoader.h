@@ -16,7 +16,7 @@ class Manager3D
 public:
     
     std::vector<Mesh> LoadModel(const std::string& path);
-    GLuint reloadTexture(const std::string& path, GLuint oldTexture);
+    //GLuint reloadTexture(const std::string& path, GLuint oldTexture);
 
 
     
@@ -28,4 +28,4 @@ private:
 
 };
 
-GLuint loadTexture(const GLchar* filename);
+//GLuint loadTexture(const GLchar* filename);
